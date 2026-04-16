@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "865822617621",
+    "project_id": "edux-licensing-b67ed",
+    "storage_bucket": "edux-licensing-b67ed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:865822617621:android:fc68915ee8c1c960639e1c",
+        "android_client_info": {
+          "package_name": "com.novabyte.novabyte_hub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAkNLQbfHcsbo21hUf3AqV_RpMqexVvQA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

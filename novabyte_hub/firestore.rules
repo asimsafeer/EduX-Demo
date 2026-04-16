@@ -1,0 +1,118 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper Functions ───────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isNonEmptyString(field) {
+      return field is string && field.size() > 0;
+    }
+
+    function hasValidModules(modules) {
+      return modules is list && modules.size() > 0 && modules.size() <= 20;
+    }
+
+    function isValidStatus(status) {
+      return status in ['pending', 'approved', 'rejected', 'trial'];
+    }
+
+    // ─── Schools Collection ─────────────────────────────────────
+    match /schools/{schoolId} {
+      // Desktop EduX apps can CREATE their school (self-registration)
+      // Accepts deviceId OR deviceFingerprint
+      allow create: if
+        isNonEmptyString(request.resource.data.schoolName)
+        && isNonEmptyString(request.resource.data.schoolId)
+        && (isNonEmptyString(request.resource.data.deviceId) 
+            || isNonEmptyString(request.resource.data.deviceFingerprint))
+        && request.resource.data.schoolId == schoolId;
+
+      // Authenticated admins can READ all schools
+      // Schools can also read their own document if they authenticate anonymously
+      allow read: if isAuthenticated()
+        || (resource != null && request.auth.uid == schoolId);
+
+      // Only admins can update
+      allow update: if isAdmin();
+
+      // Nobody can delete
+      allow delete: if false;
+    }
+
+    // ─── License Requests Collection ────────────────────────────
+    match /license_requests/{requestId} {
+      // Desktop EduX apps can CREATE requests
+      // Validates required fields, allows 'trial' status too
+      allow create: if
+        isNonEmptyString(request.resource.data.schoolId)
+        && isNonEmptyString(request.resource.data.schoolName)
+        && hasValidModules(request.resource.data.requestedModules)
+        && isValidStatus(request.resource.data.status)
+        && request.resource.data.requestedAt is timestamp;
+
+      // Authenticated admins can READ all requests
+      // Schools can read their own requests if authenticated via token
+      allow read: if isAuthenticated()
+        || (resource != null && resource.data.schoolId == request.auth.uid);
+
+      // Only admins can update
+      allow update: if isAdmin()
+        && isValidStatus(request.resource.data.status)
+        && resource.data.status == 'pending'
+        && request.resource.data.status != 'pending';
+
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+
+    // ─── Licenses Collection ────────────────────────────────────
+    match /licenses/{schoolId} {
+      // Admins can do everything
+      allow read, write: if isAdmin();
+
+      // Schools can read their own license if authenticated (including anonymous auth)
+      // Anonymous auth UIDs don't match schoolId, so we allow any authenticated read
+      allow read: if isAuthenticated();
+
+      // Validate license writes
+      allow create: if isAdmin()
+        && isNonEmptyString(request.resource.data.schoolId)
+        && hasValidModules(request.resource.data.approvedModules)
+        && request.resource.data.isActive == true
+        && isNonEmptyString(request.resource.data.grantedBy)
+        && request.resource.data.grantedBy == request.auth.uid;
+
+      allow update: if isAdmin()
+        && isNonEmptyString(request.resource.data.grantedBy);
+    }
+
+    // ─── Admins Collection ──────────────────────────────────────
+    match /admins/{adminId} {
+      // Users can read/write their own admin document
+      // This is needed for the auto-creation on first login
+      allow read, write: if isAuthenticated() && request.auth.uid == adminId;
+    }
+
+    // ─── Admin Config Collection ────────────────────────────────
+    match /admin_config/{configId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─── Audit Logs ─────────────────────────────────────────────
+    match /schools/{schoolId}/audit_log/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+  }
+}

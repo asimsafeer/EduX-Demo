@@ -1,0 +1,84 @@
+name: edux
+description: "EduX School Management System - Comprehensive offline-first school management solution"
+publish_to: "none"
+
+version: 1.0.0+19
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management & Dependency Injection
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Database - Drift (SQLite)
+  drift: ^2.18.0
+  sqlite3_flutter_libs: ^0.5.21
+  path_provider: ^2.1.3
+  path: ^1.9.0
+
+  # UI Components
+  google_fonts: ^6.2.1
+  lucide_icons: ^0.257.0
+  flutter_animate: ^4.5.0
+
+  # Export/Import
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  excel: ^4.0.3
+
+  # Charts
+  fl_chart: ^0.68.0
+
+  # File Handling
+  file_picker: ^8.0.3
+  image_picker: ^1.0.7
+  url_launcher: ^6.2.5
+  share_plus: ^9.0.0
+
+  # Navigation
+  go_router: ^14.1.4
+
+  # Desktop Window Management
+  window_manager: ^0.3.9
+
+  # Utilities
+  uuid: ^4.4.0
+  vector_math: ^2.1.4
+  equatable: ^2.0.5
+  intl: ^0.19.0
+  crypto: ^3.0.3
+  archive: ^3.6.1
+  shared_preferences: ^2.2.2
+  mailer: ^6.6.0
+  device_info_plus: ^10.1.2
+  http: ^1.2.1
+
+  # Sync Server Dependencies
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
+  multicast_dns: ^0.3.2+7
+  network_info_plus: ^4.0.2
+  sqlite3: ^2.4.5
+  ntp: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  drift_dev: ^2.18.0
+  build_runner: ^2.4.9
+  riverpod_generator: ^2.4.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icon.png
+    - assets/novabyte_logo.jpg
+    - assets/novabyte_logo.png

@@ -1,0 +1,60 @@
+name: novabyte_hub
+description: "NovaByte Hub - EduX License Management Admin App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Routing
+  go_router: ^14.8.1
+
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.6
+  firebase_messaging: ^15.2.6
+
+  # UI & Design
+  google_fonts: ^6.2.1
+  lucide_icons: ^0.257.0
+  flutter_animate: ^4.5.2
+
+  # Utilities
+  intl: ^0.20.2
+  timeago: ^3.7.0
+  shared_preferences: ^2.5.3
+  crypto: ^3.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  fake_cloud_firestore: ^3.1.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/images/
+flutter_launcher_icons:
+  image_path: "assets/icon.png"
+  android: "launcher_icon"
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/icon.png"
+    background_color: "#0F172A"
+    theme_color: "#0F172A"
+  macos:
+    generate: true
+    image_path: "assets/icon.png"

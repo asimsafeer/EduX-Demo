@@ -1,0 +1,28 @@
+# flutter_launcher_icons configuration for NovaByte Hub
+# Run: flutter pub run flutter_launcher_icons:main
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
+
+flutter_icons:
+  # Android
+  android: true
+  image_path: "assets/icon.png"
+  adaptive_icon_background: "#1C2340"  # Dark navy from your app theme
+  adaptive_icon_foreground: "assets/icon.png"
+  min_sdk_android: 21
+
+  # iOS (disabled for now - only building Android)
+  ios: false
+
+  # Web (disabled)
+  web:
+    generate: false
+
+  # Windows (disabled)
+  windows:
+    generate: false
+
+  # macOS (disabled)
+  macos:
+    generate: false

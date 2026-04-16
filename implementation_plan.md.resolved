@@ -1,0 +1,103 @@
+# Remove Trial System & Fix Splash Screen Crash
+
+The app crashes on splash screen because [getAppStatus()](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#556-595) checks trial data (`edux_has_selected_package`, `edux_trial_data_v2`) which may be missing or corrupted for existing installs. Since trials are no longer used, we remove the entire trial system and simplify the license flow to: **Setup → Request License → Licensed → Login/Dashboard**.
+
+## Proposed Changes
+
+### LicenseService
+
+#### [MODIFY] [license_service.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart)
+
+- **Remove** [TrialData](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#124-226) class (lines 124–225)
+- **Remove** `AppLicenseStatus.trial` and `AppLicenseStatus.noPackageSelected` enum values
+- **Remove** trial methods: [startTrialWithPackage](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#312-384), [startFreeTrial](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#385-405), [selectPackageDirectly](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#406-418), [getTrialData](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#419-448), [clearTrialData](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#449-457), [shouldInvalidateTrial](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#1210-1225), [getTrialTimeRemaining](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#613-631), [isFreeTrial](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#632-637), [getFreeTrialStudentLimit](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#638-643), [hasSelectedPackage](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#296-305), [markPackageAsSelected](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#306-311), [getSelectedPackageId](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#1226-1231)
+- **Simplify [getAppStatus()](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#556-595)**: Check license → pending → expired (no trial/package checks)
+- **Simplify [isModuleAccessible()](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#596-612)**: Only check licensed status
+- **Remove** [registerSchoolInFirestoreWithPackage](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#752-809) (trial-specific registration)
+
+---
+
+### Splash Screen
+
+#### [MODIFY] [splash_screen.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/splash/splash_screen.dart)
+
+Simplified flow:
+1. Check [isSchoolSetup()](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/database/app_database.dart#425-430) → go to setup if not
+2. Check [getAppStatus()](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#556-595) → if `licensed`, go to login; otherwise go to `requestLicense`
+3. Remove all trial invalidation, package selection checks, and trial status routing
+
+---
+
+### Router
+
+#### [MODIFY] [app_router.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/router/app_router.dart)
+
+- Remove [selectPackage](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/services/license_service.dart#406-418) route constant and GoRoute definition
+- Remove trial security redirect block (lines 159–170)
+- Remove `PackageSelectionScreen` import
+
+---
+
+### Setup Flow
+
+#### [MODIFY] [school_setup_screen.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/setup/school_setup_screen.dart)
+
+- After setup completion, navigate to `AppRoutes.requestLicense` instead of `AppRoutes.selectPackage`
+- Update success dialog text: remove "24-hour free trial" references
+
+---
+
+### Dashboard
+
+#### [MODIFY] [dashboard_screen.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/dashboard/dashboard_screen.dart)
+
+- Remove `const TrialBanner()` widget (line 72)
+
+#### [DELETE] [trial_banner.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/dashboard/widgets/trial_banner.dart)
+
+#### [MODIFY] [widgets.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/dashboard/widgets/widgets.dart)
+
+- Remove `export 'trial_banner.dart';` line
+
+---
+
+### App Shell & Module Gate
+
+#### [MODIFY] [app_shell.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/shell/app_shell.dart)
+
+- Remove `AppLicenseStatus.trial` check from [_isModuleLocked](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/shell/app_shell.dart#151-164)
+
+#### [MODIFY] [module_gate.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/core/widgets/module_gate.dart)
+
+- Remove `noPackageSelected` status checks and trial-related UI text
+
+---
+
+### Constants
+
+#### [MODIFY] [app_constants.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/core/constants/app_constants.dart)
+
+- Remove trial-related constants: `trialDurationHours`, `trialDurationDays`, `trialUrgentWarningMinutes`, `freeTrialMaxStudents`, `prefTrialData`, `prefHasSeenPackageSelection`
+
+---
+
+#### [DELETE] [package_selection_screen.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/setup/package_selection_screen.dart)
+
+---
+
+### License Request Screen
+
+#### [MODIFY] [license_request_screen.dart](file:///c:/Users/asims/Downloads/Development/EDU_X/lib/features/setup/license_request_screen.dart)
+
+- Remove any trial-related text or references
+
+## Verification Plan
+
+### Automated Tests
+- `flutter build windows` — Ensures the app compiles without errors after all changes
+
+### Manual Verification
+1. Launch the app fresh (delete any existing DB/prefs)
+2. Confirm splash → setup wizard → request license (no package selection step)
+3. With an existing licensed install, confirm splash → login screen
+4. Confirm dashboard loads without trial banner
