@@ -150,6 +150,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   bool _isModuleLocked(String? moduleId) {
     if (moduleId == null) return false;
+    if (DemoConfig.isDemo) return false;
 
     // During pending request, all modules are unlocked
     if (_licenseStatus == AppLicenseStatus.pendingRequest) {
