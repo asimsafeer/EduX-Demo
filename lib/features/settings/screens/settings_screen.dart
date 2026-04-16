@@ -50,13 +50,15 @@ class SettingsScreen extends ConsumerWidget {
               ),
               onTap: () => context.push(AppRoutes.schoolProfile),
             ),
-            const SizedBox(height: 12),
-            SettingsCard(
-              icon: LucideIcons.shieldCheck,
-              title: 'License & Plan',
-              subtitle: 'View your current plan or request an upgrade',
-              onTap: () => context.push(AppRoutes.requestLicense),
-            ),
+            if (!DemoConfig.isDemo) ...[
+              const SizedBox(height: 12),
+              SettingsCard(
+                icon: LucideIcons.shieldCheck,
+                title: 'License & Plan',
+                subtitle: 'View your current plan or request an upgrade',
+                onTap: () => context.push(AppRoutes.requestLicense),
+              ),
+            ],
             const SizedBox(height: 12),
             SettingsCard(
               icon: LucideIcons.calendar,
