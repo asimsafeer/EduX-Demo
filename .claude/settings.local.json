@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter build *)",
+      "PowerShell(Get-Command flutter -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\\", \"$env:LOCALAPPDATA\", \"$env:USERPROFILE\" -Filter \"flutter.bat\" -Recurse -ErrorAction SilentlyContinue -Depth 5 | Select-Object -First 5 FullName)",
+      "PowerShell([System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\) -split \";\" | Where-Object { $_ -ne \"\" })",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\src\", \"C:\\\\flutter\", \"$env:USERPROFILE\\\\flutter\", \"C:\\\\tools\" -Filter \"flutter.bat\" -ErrorAction SilentlyContinue | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"C:\\\\\" -Filter \"flutter\" -Directory -ErrorAction SilentlyContinue | Select-Object FullName; Get-ChildItem \"$env:USERPROFILE\" -Filter \"flutter\" -Directory -ErrorAction SilentlyContinue | Select-Object FullName)"
+    ]
+  }
+}
