@@ -92,23 +92,27 @@ class Attendance extends _$Attendance {
 
       // AUTO-FETCH: If cache is empty, try to fetch from server
       if (cachedStudents.isEmpty) {
-        debugPrint('[Attendance] No cached students for class $classId-$sectionId, attempting auto-fetch...');
-        
+        debugPrint(
+            '[Attendance] No cached students for class $classId-$sectionId, attempting auto-fetch...');
+
         final syncService = ref.read(syncServiceProvider);
         if (syncService.isInitialized) {
           try {
-            final fetchResult = await syncService.fetchStudentsWithDiagnostics(classId, sectionId);
-            
+            final fetchResult = await syncService.fetchStudentsWithDiagnostics(
+                classId, sectionId);
+
             // Check if server returned diagnostic info
             if (fetchResult['students'] != null) {
               final studentsList = fetchResult['students'] as List;
-              debugPrint('[Attendance] Server returned ${studentsList.length} students');
-              
+              debugPrint(
+                  '[Attendance] Server returned ${studentsList.length} students');
+
               // Check for diagnostics
               if (studentsList.isEmpty && fetchResult['diagnostics'] != null) {
-                final diagnostics = fetchResult['diagnostics'] as Map<String, dynamic>;
+                final diagnostics =
+                    fetchResult['diagnostics'] as Map<String, dynamic>;
                 debugPrint('[Attendance] Server diagnostics: $diagnostics');
-                
+
                 // Build helpful error message
                 final errorMsg = _buildDiagnosticErrorMessage(diagnostics);
                 state = AttendanceState(
@@ -121,23 +125,27 @@ class Attendance extends _$Attendance {
                 return;
               }
             }
-            
+
             // Reload from cache after fetch
             cachedStudents = await _db.getCachedStudents(classId, sectionId);
-            debugPrint('[Attendance] Auto-fetched ${cachedStudents.length} students for class $classId-$sectionId');
+            debugPrint(
+                '[Attendance] Auto-fetched ${cachedStudents.length} students for class $classId-$sectionId');
           } catch (e) {
-            debugPrint('[Attendance] Auto-fetch failed for class $classId-$sectionId: $e');
+            debugPrint(
+                '[Attendance] Auto-fetch failed for class $classId-$sectionId: $e');
             state = AttendanceState(
               students: const [],
               attendanceStatus: const {},
               remarks: const {},
               stats: const AttendanceStats(),
-              error: 'Failed to fetch students: $e\n\nPlease check:\n1. Server is running\n2. Students are enrolled in this class\n3. Academic year is set correctly',
+              error:
+                  'Failed to fetch students: $e\n\nPlease check:\n1. Server is running\n2. Students are enrolled in this class\n3. Academic year is set correctly',
             );
             return;
           }
         } else {
-          debugPrint('[Attendance] Sync service not initialized, cannot auto-fetch');
+          debugPrint(
+              '[Attendance] Sync service not initialized, cannot auto-fetch');
         }
       }
 
@@ -176,7 +184,7 @@ class Attendance extends _$Attendance {
 
       // Check for data integrity issue (expected students but cache is empty)
       final classInfo = await _db.getCachedClass(classId, sectionId);
-      final hasDataIntegrityIssue = cachedStudents.isEmpty && 
+      final hasDataIntegrityIssue = cachedStudents.isEmpty &&
           (classInfo != null && classInfo.totalStudents > 0);
 
       state = AttendanceState(
@@ -184,9 +192,9 @@ class Attendance extends _$Attendance {
         attendanceStatus: attendanceStatus,
         remarks: remarks,
         stats: stats,
-        error: hasDataIntegrityIssue 
-            ? 'Class shows ${classInfo!.totalStudents} students but none cached. Tap "Load Students" to fetch from server.'
-            : cachedStudents.isEmpty 
+        error: hasDataIntegrityIssue
+            ? 'Class shows ${classInfo.totalStudents} students but none cached. Tap "Load Students" to fetch from server.'
+            : cachedStudents.isEmpty
                 ? 'No students found for this class. Please verify students are enrolled in the main system.'
                 : null,
       );
@@ -198,40 +206,45 @@ class Attendance extends _$Attendance {
       );
     }
   }
-  
+
   /// Build user-friendly error message from server diagnostics
   String _buildDiagnosticErrorMessage(Map<String, dynamic> diagnostics) {
     final buffer = StringBuffer();
     buffer.writeln('No students found. Server diagnostics:');
     buffer.writeln();
-    
-    final totalEnrollments = diagnostics['totalEnrollmentsAnyYear'] as int? ?? 0;
+
+    final totalEnrollments =
+        diagnostics['totalEnrollmentsAnyYear'] as int? ?? 0;
     final yearMatch = diagnostics['yearMatch'] as bool? ?? false;
     final activeStudents = diagnostics['activeStudents'] as int? ?? 0;
-    final expectedYear = diagnostics['expectedAcademicYear'] as String? ?? 'unknown';
-    final availableYears = diagnostics['availableAcademicYears'] as List<dynamic>? ?? [];
-    
+    final expectedYear =
+        diagnostics['expectedAcademicYear'] as String? ?? 'unknown';
+    final availableYears =
+        diagnostics['availableAcademicYears'] as List<dynamic>? ?? [];
+
     if (totalEnrollments == 0) {
       buffer.writeln('• No enrollments exist for this class/section');
       buffer.writeln('  Please enroll students in the main system first.');
     } else if (!yearMatch) {
-      buffer.writeln('• Enrollments exist for years: ${availableYears.join(", ")}');
+      buffer.writeln(
+          '• Enrollments exist for years: ${availableYears.join(", ")}');
       buffer.writeln('  But current year is: $expectedYear');
       buffer.writeln('  Please update academic year in main system settings.');
     } else if (activeStudents == 0) {
-      buffer.writeln('• $totalEnrollments enrollments found but none are "active"');
+      buffer.writeln(
+          '• $totalEnrollments enrollments found but none are "active"');
       buffer.writeln('  Please check student status in the main system.');
     } else {
       buffer.writeln('• Found $totalEnrollments total enrollments');
       buffer.writeln('• $activeStudents active students');
       buffer.writeln('• Data mismatch detected');
     }
-    
+
     if (diagnostics['suggestedFix'] != null) {
       buffer.writeln();
       buffer.writeln('Suggested fix: ${diagnostics['suggestedFix']}');
     }
-    
+
     return buffer.toString();
   }
 
